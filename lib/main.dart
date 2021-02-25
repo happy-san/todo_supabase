@@ -4,26 +4,23 @@ import 'package:supabase/supabase.dart';
 import 'supabase.dart' as supabase;
 
 void main() async {
-  final client = SupabaseClient(supabase.url, supabase.key);
-
   // query data
-  final response = await client
+  final response = await supabase.client
       .from('countries')
       .select()
       .order('name', ascending: true)
       .execute();
   if (response.error == null) {
     print('response.data: ${response.data}');
+  } else {
+    print('response: ${response.error}');
   }
-  runApp(MyApp(
-    client: client,
-  ));
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final SupabaseClient client;
 
-  MyApp({this.client});
+  MyApp();
 
   @override
   Widget build(BuildContext context) {
@@ -35,16 +32,13 @@ class MyApp extends StatelessWidget {
       ),
       home: MyHomePage(
         title: 'SupaBase Demo Home Page',
-        client: client,
       ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  final SupabaseClient client;
-
-  MyHomePage({Key key, this.title, this.client}) : super(key: key);
+  MyHomePage({Key key, this.title}) : super(key: key);
 
   final String title;
 
@@ -57,23 +51,33 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   var _subOnCountriesInsert;
 
   void _addSubs() {
-    _subOnCountriesDelete =
-        widget.client.from('countries').on(SupabaseEventTypes.delete, (x) {
-      print('on countries.delete: ${x.table} ${x.eventType} ${x.oldRecord}');
-    }).subscribe((String event, {String errorMsg}) {
-      print('event: $event error: $errorMsg');
-    });
-    _subOnCountriesInsert =
-        widget.client.from('countries').on(SupabaseEventTypes.insert, (x) {
-      print('on countries.insert: ${x.table} ${x.eventType}${x.newRecord} ');
-    }).subscribe((String event, {String errorMsg}) {
-      print('event: $event error: $errorMsg');
-    });
+    final _client = supabase.client;
+    if (_client != null) {
+      _subOnCountriesDelete =
+          _client.from('countries').on(SupabaseEventTypes.delete, (x) {
+        print('on countries.delete: ${x.table} ${x.eventType} ${x.oldRecord}');
+      }).subscribe((String event, {String errorMsg}) {
+        print('event: $event error: $errorMsg');
+      });
+      _subOnCountriesInsert =
+          _client.from('countries').on(SupabaseEventTypes.insert, (x) {
+        print('on countries.insert: ${x.table} ${x.eventType}${x.newRecord} ');
+      }).subscribe((String event, {String errorMsg}) {
+        print('event: $event error: $errorMsg');
+      });
+    } else {
+      print('client is null');
+    }
   }
 
   void _removeSubs() {
-    widget.client.removeSubscription(_subOnCountriesDelete);
-    widget.client.removeSubscription(_subOnCountriesInsert);
+    final _client = supabase.client;
+    if (_client != null) {
+      _client.removeSubscription(_subOnCountriesDelete);
+      _client.removeSubscription(_subOnCountriesInsert);
+    } else {
+      print('client is null');
+    }
   }
 
   @override
