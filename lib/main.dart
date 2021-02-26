@@ -83,11 +83,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   void initState() {
     WidgetsBinding.instance.addObserver(LifecycleEventHandler(
         detachedCallBack: () => _removeSubs(),
-        resumeCallBack: () {
-          print('resume...');
-        }));
-    _addSubs();
+        resumeCallBack: () => _addSubs()));
 
+    _addSubs();
     super.initState();
   }
 
@@ -115,6 +113,13 @@ class LifecycleEventHandler extends WidgetsBindingObserver {
 
   @override
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
+
+    print('''
+=============================================================
+               $state
+=============================================================
+''');
+
     switch (state) {
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
@@ -125,11 +130,6 @@ class LifecycleEventHandler extends WidgetsBindingObserver {
         await resumeCallBack();
         break;
     }
-    print('''
-=============================================================
-               $state
-=============================================================
-''');
   }
 
 //  @override
