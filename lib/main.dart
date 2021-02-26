@@ -49,9 +49,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   var _subOnCountriesDelete;
   var _subOnCountriesInsert;
+  final _client = supabase.client;
 
   void _addSubs() {
-    final _client = supabase.client;
     if (_client != null) {
       _subOnCountriesDelete =
           _client.from('countries').on(SupabaseEventTypes.delete, (x) {
@@ -71,7 +71,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   void _removeSubs() {
-    final _client = supabase.client;
     if (_client != null) {
       _client.removeSubscription(_subOnCountriesDelete);
       _client.removeSubscription(_subOnCountriesInsert);
@@ -86,7 +85,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         detachedCallBack: () => _removeSubs(),
         resumeCallBack: () {
           print('resume...');
-          _addSubs();
         }));
     _addSubs();
 
