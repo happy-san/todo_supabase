@@ -19,7 +19,6 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-
   MyApp();
 
   @override
@@ -47,21 +46,29 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
-  var _subOnCountriesDelete;
-  var _subOnCountriesInsert;
+  var _countriesSub;
   final _client = supabase.client;
 
   void _addSubs() {
     if (_client != null) {
-      _subOnCountriesDelete =
-          _client.from('countries').on(SupabaseEventTypes.delete, (x) {
-        print('on countries.delete: ${x.table} ${x.eventType} ${x.oldRecord}');
-      }).subscribe((String event, {String errorMsg}) {
-        print('event: $event error: $errorMsg');
-      });
-      _subOnCountriesInsert =
-          _client.from('countries').on(SupabaseEventTypes.insert, (x) {
-        print('on countries.insert: ${x.table} ${x.eventType}${x.newRecord} ');
+      _countriesSub =
+          _client.from('countries').on(SupabaseEventTypes.all, (x) {
+        switch (x.eventType) {
+          case 'INSERT':
+            print(
+                'on countries.insert: ${x.table} ${x.eventType} ${x.newRecord} ');
+            break;
+
+          case 'DELETE':
+            print(
+                'on countries.delete: ${x.table} ${x.eventType} ${x.oldRecord}');
+            break;
+
+          case 'UPDATE':
+            print(
+                'on countries.update: ${x.table} ${x.eventType} ${x.oldRecord} -> ${x.newRecord} ');
+            break;
+        }
       }).subscribe((String event, {String errorMsg}) {
         print('event: $event error: $errorMsg');
       });
@@ -72,8 +79,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   void _removeSubs() {
     if (_client != null) {
-      _client.removeSubscription(_subOnCountriesDelete);
-      _client.removeSubscription(_subOnCountriesInsert);
+      _client.removeSubscription(_countriesSub);
     } else {
       print('client is null');
     }
@@ -113,7 +119,6 @@ class LifecycleEventHandler extends WidgetsBindingObserver {
 
   @override
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
-
     print('''
 =============================================================
                $state
