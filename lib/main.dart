@@ -3,24 +3,9 @@ import 'package:supabase/supabase.dart';
 
 import 'supabase.dart' as supabase;
 
-void main() async {
-  // query data
-  final response = await supabase.client
-      .from('countries')
-      .select()
-      .order('name', ascending: true)
-      .execute();
-  if (response.error == null) {
-    print('response.data: ${response.data}');
-  } else {
-    print('response: ${response.error}');
-  }
-  runApp(MyApp());
-}
+void main() async => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  MyApp();
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -51,8 +36,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   void _addSubs() {
     if (_client != null) {
-      _countriesSub =
-          _client.from('countries').on(SupabaseEventTypes.all, (x) {
+      _countriesSub = _client.from('countries').on(SupabaseEventTypes.all, (x) {
         switch (x.eventType) {
           case 'INSERT':
             print(
