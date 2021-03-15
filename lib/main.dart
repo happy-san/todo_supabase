@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:supabase/supabase.dart';
 
 import 'supabase.dart' as supabase;
+import 'todo_repository.dart';
 
-void main() async => runApp(MyApp());
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
@@ -16,66 +16,29 @@ class MyApp extends StatelessWidget {
       ),
       home: MyHomePage(
         title: 'SupaBase Demo Home Page',
+        repo: TodoRepository(client: supabase.client),
       ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key key, this.title, this.repo}) : super(key: key);
 
   final String title;
+  final TodoRepository repo;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
-  var _countriesSub;
-  final _client = supabase.client;
-
-  void _addSubs() {
-    if (_client != null) {
-      _countriesSub = _client.from('countries').on(SupabaseEventTypes.all, (x) {
-        switch (x.eventType) {
-          case 'INSERT':
-            print(
-                'on countries.insert: ${x.table} ${x.eventType} ${x.newRecord} ');
-            break;
-
-          case 'DELETE':
-            print(
-                'on countries.delete: ${x.table} ${x.eventType} ${x.oldRecord}');
-            break;
-
-          case 'UPDATE':
-            print(
-                'on countries.update: ${x.table} ${x.eventType} ${x.oldRecord} -> ${x.newRecord} ');
-            break;
-        }
-      }).subscribe((String event, {String errorMsg}) {
-        print('event: $event error: $errorMsg');
-      });
-    } else {
-      print('client is null');
-    }
-  }
-
-  void _removeSubs() {
-    if (_client != null) {
-      _client.removeSubscription(_countriesSub);
-    } else {
-      print('client is null');
-    }
-  }
-
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(LifecycleEventHandler(
-        detachedCallBack: () => _removeSubs(),
-        resumeCallBack: () => _addSubs()));
+        detachedCallBack: () => widget.repo.removeSub(),
+        resumeCallBack: () => widget.repo.addSub()));
 
-    _addSubs();
     super.initState();
   }
 
@@ -84,6 +47,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+      ),
+      body: ListView.builder(
+        itemBuilder: (ctx, i) => Text(widget.repo.todos[i]),
+        itemCount: widget.repo.todos.length,
       ),
     );
   }

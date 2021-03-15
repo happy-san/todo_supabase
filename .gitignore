@@ -39,3 +39,6 @@ app.*.symbols
 
 # Obfuscation related
 app.*.map.json
+
+# Ignore supabase.dart
+lib/supabase.dart
