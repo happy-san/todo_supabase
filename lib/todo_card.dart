@@ -9,24 +9,41 @@ class TodoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 2,
+      elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-      color: Colors.blueGrey[200],
+      margin: const EdgeInsets.symmetric(
+        horizontal: 10.0,
+        vertical: 5.0,
+      ),
+      color: Colors.blueGrey[100],
       child: Padding(
-        padding: const EdgeInsets.only(
-            left: 10.0, top: 8.0, right: 10.0, bottom: 8.0),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 10.0,
+          vertical: 10.0,
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
               child: Text(
                 task,
-                style: TextStyle(
-                    decorationStyle: status ? null : TextDecorationStyle.dashed,
-                    fontSize: 24),
+                style: status
+                    ? const TextStyle(
+                        fontSize: 20,
+                        decoration: TextDecoration.lineThrough,
+                        color: Colors.black38,
+                      )
+                    : const TextStyle(fontSize: 20),
               ),
             ),
-            Icon(status ? Icons.alarm_off_rounded : Icons.alarm_on_rounded),
+            status
+                ? const Icon(
+                    Icons.alarm_on_rounded,
+                    color: Colors.black38,
+                  )
+                : const Icon(
+                    Icons.access_alarms_rounded,
+                  ),
           ],
         ),
       ),

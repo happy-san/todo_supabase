@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
-import 'supabase.dart' as supabase;
 import 'todo_repository.dart';
+import 'service_locator.dart';
+import 'todo_card.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  initServiceLocator();
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override
@@ -16,28 +20,30 @@ class MyApp extends StatelessWidget {
       ),
       home: MyHomePage(
         title: 'SupaBase Demo Home Page',
-        repo: TodoRepository(client: supabase.client),
       ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title, this.repo}) : super(key: key);
+  MyHomePage({Key key, this.title}) : super(key: key);
 
   final String title;
-  final TodoRepository repo;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
+  final _repo = sl<TodoRepository>();
+
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(LifecycleEventHandler(
-        detachedCallBack: () => widget.repo.removeSub(),
-        resumeCallBack: () => widget.repo.addSub()));
+        detachedCallBack: () => _repo.removeSub(),
+        resumeCallBack: () => _repo.addSub()));
+
+    _repo.addListener(() => setState(() {}));
 
     super.initState();
   }
@@ -48,9 +54,18 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: ListView.builder(
-        itemBuilder: (ctx, i) => Text(widget.repo.todos[i]),
-        itemCount: widget.repo.todos.length,
+      body: ListView.separated(
+        separatorBuilder: (_, __) => Padding(
+          padding: EdgeInsets.symmetric(
+            vertical: 1,
+          ),
+        ),
+        itemBuilder: (ctx, i) => TodoCard(
+          key: Key(_repo.todos[i].task),
+          status: _repo.todos[i].status,
+          task: _repo.todos[i].task,
+        ),
+        itemCount: _repo.todos.length,
       ),
     );
   }
@@ -61,12 +76,6 @@ class LifecycleEventHandler extends WidgetsBindingObserver {
 
   final Function resumeCallBack;
   final Function detachedCallBack;
-
-//  @override
-//  Future<bool> didPopRoute()
-
-//  @override
-//  void didHaveMemoryPressure()
 
   @override
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
@@ -87,16 +96,4 @@ class LifecycleEventHandler extends WidgetsBindingObserver {
         break;
     }
   }
-
-//  @override
-//  void didChangeLocale(Locale locale)
-
-//  @override
-//  void didChangeTextScaleFactor()
-
-//  @override
-//  void didChangeMetrics();
-
-//  @override
-//  Future<bool> didPushRoute(String route)
 }

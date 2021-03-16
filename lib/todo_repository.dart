@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase/supabase.dart';
 import 'package:realtime_client/realtime_client.dart';
 
-class TodoRepository {
-  var todos = <String>[];
+import 'todo.dart';
+
+class TodoRepository extends ChangeNotifier {
+  var todos = <Todo>[];
   final SupabaseClient client;
 
   RealtimeSubscription _sub;
@@ -13,44 +16,49 @@ class TodoRepository {
   }
 
   Future<void> _initTodo() async {
-    ((await client.from('todos').select('task').execute()).data as List)
+    ((await client.from('todos').select('task, status').execute()).data as List)
         .forEach((element) {
-      todos.add((element as Map).cast<String, dynamic>()['task']);
+      print(element);
+      todos.add(Todo.fromMap((element as Map).cast<String, dynamic>()));
     });
-    print('Init\n$todos}');
+    notifyListeners();
+    print('Init\n$todos');
   }
 
   Future<void> addSub() async {
     _sub = client.from('todos').on(SupabaseEventTypes.all, (x) {
       switch (x.eventType) {
         case 'INSERT':
-          final newTask = (x.newRecord as Map).cast<String, dynamic>()['task'];
-
           print('${x.table}.${x.eventType} ${x.newRecord} ');
-          todos.add(newTask);
+          todos.add(Todo.fromMap((x.newRecord as Map).cast<String, dynamic>()));
           break;
 
         case 'DELETE':
           final oldTask = (x.oldRecord as Map).cast<String, dynamic>()['task'];
 
           print('${x.table}.${x.eventType} ${x.oldRecord}');
-          todos.removeWhere((todo) => todo.compareTo(oldTask) == 0);
+          todos.removeWhere((todo) => todo.task.compareTo(oldTask) == 0);
           break;
 
         case 'UPDATE':
-          final newTask = (x.newRecord as Map).cast<String, dynamic>()['task'],
-              oldTask = (x.oldRecord as Map).cast<String, dynamic>()['task'];
+          final oldTask = (x.oldRecord as Map).cast<String, dynamic>()['task'];
 
           print('${x.table}.${x.eventType} ${x.oldRecord} -> ${x.newRecord} ');
-          final index = todos.indexOf(oldTask);
+
+          final index =
+                  todos.indexWhere((todo) => todo.task.compareTo(oldTask) == 0),
+              todo = Todo.fromMap((x.newRecord as Map).cast<String, dynamic>());
+
           if (index != -1) {
-            todos[index] = newTask;
+            todos[index].task = todo.task;
+            todos[index].status = todo.status;
           } else {
-            todos.add(newTask);
+            todos.add(todo);
           }
           break;
       }
       print(todos);
+      notifyListeners();
     }).subscribe((String event, {String errorMsg}) {
       print('event: $event error: $errorMsg');
     });
