@@ -5,17 +5,19 @@ import 'package:realtime_client/realtime_client.dart';
 import 'todo.dart';
 
 class TodoRepository extends ChangeNotifier {
-  var todos = <Todo>[];
+  List<Todo> todos;
   final SupabaseClient client;
 
   RealtimeSubscription _sub;
 
   TodoRepository({this.client}) {
-    _initTodo();
+    initTodo();
     addSub();
   }
 
-  Future<void> _initTodo() async {
+  Future<void> initTodo() async {
+    todos = [];
+    notifyListeners();
     ((await client.from('todos').select('task, status').execute()).data as List)
         .forEach((element) {
       print(element);
@@ -24,6 +26,21 @@ class TodoRepository extends ChangeNotifier {
     notifyListeners();
     print('Init\n$todos');
   }
+
+  Future<void> createTodo(String task) async =>
+      await client.from('todos').insert(
+        {'task': task, 'status': false},
+        upsert: true,
+      ).execute();
+
+  Future<void> updateStatus(Todo todo) async => await client
+      .from('todos')
+      .update({'status': !todo.status})
+      .eq('task', todo.task)
+      .execute();
+
+  Future<void> deleteTodo(String task) async =>
+      await client.from('todos').delete().eq('task', task).execute();
 
   Future<void> addSub() async {
     _sub = client.from('todos').on(SupabaseEventTypes.all, (x) {
