@@ -10,7 +10,7 @@ class TodoRepository extends ChangeNotifier {
 
   RealtimeSubscription _sub;
 
-  TodoRepository({this.client}) {
+  TodoRepository(this.client) {
     initTodo();
     addSub();
   }
@@ -19,7 +19,7 @@ class TodoRepository extends ChangeNotifier {
     todos = [];
     notifyListeners();
     ((await client.from('todos').select('task, status').execute()).data as List)
-        .forEach((element) {
+        ?.forEach((element) {
       print(element);
       todos.add(Todo.fromMap((element as Map).cast<String, dynamic>()));
     });
@@ -67,7 +67,6 @@ class TodoRepository extends ChangeNotifier {
               todo = Todo.fromMap((x.newRecord as Map).cast<String, dynamic>());
 
           if (index != -1) {
-            todos[index].task = todo.task;
             todos[index].status = todo.status;
           } else {
             todos.add(todo);

@@ -6,5 +6,5 @@ import 'todo_repository.dart';
 final sl = GetIt.instance;
 
 void initServiceLocator() {
-  sl.registerSingleton<TodoRepository>(TodoRepository(client: supabase.client));
+  sl.registerSingleton<TodoRepository>(TodoRepository(supabase.client));
 }

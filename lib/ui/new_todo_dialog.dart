@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'todo_repository.dart';
-import 'service_locator.dart';
+import '../core/todo_repository.dart';
+import '../core/service_locator.dart';
 
 class NewTodoDialog extends StatefulWidget {
   @override
