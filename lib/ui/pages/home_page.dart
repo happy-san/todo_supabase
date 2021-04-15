@@ -7,7 +7,7 @@ import '../../ui/todo_card.dart';
 import '../../ui/new_todo_dialog.dart';
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
@@ -15,12 +15,13 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
-  final _repo = sl<TodoRepository>();
+class _MyHomePageState extends State<MyHomePage>
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+  final TodoRepository _repo = sl<TodoRepository>();
 
   @override
   void initState() {
-    WidgetsBinding.instance.addObserver(LifecycleEventHandler(
+    WidgetsBinding.instance!.addObserver(LifecycleEventHandler(
         detachedCallBack: () => _repo.removeSub(),
         resumeCallBack: () => _repo.addSub()));
 
@@ -45,8 +46,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
             ),
           ),
           itemBuilder: (ctx, i) {
-            final task = _repo.todos[i].task,
-                isLast = i == _repo.todos.length - 1;
+            final task = _repo.todos![i].task,
+                isLast = (i == _repo.todos!.length - 1);
 
             return Builder(
               builder: (context) => Dismissible(
@@ -54,7 +55,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                 onDismissed: (direction) async {
                   await _repo.deleteTodo(task);
 
-                  Scaffold.of(context).showSnackBar(SnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text("$task deleted"),
                     duration: Duration(milliseconds: 750),
                   ));
@@ -77,17 +78,17 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                   ),
                 ),
                 child: GestureDetector(
-                  onTap: () => _repo.updateStatus(_repo.todos[i]),
+                  onTap: () => _repo.updateStatus(_repo.todos![i]),
                   child: TodoCard(
-                    status: _repo.todos[i].status,
-                    task: _repo.todos[i].task,
+                    status: _repo.todos![i].status,
+                    task: _repo.todos![i].task,
                     isLast: isLast,
                   ),
                 ),
               ),
             );
           },
-          itemCount: _repo.todos.length,
+          itemCount: _repo.todos!.length,
         ),
       ),
       floatingActionButton: Builder(
@@ -97,7 +98,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
               showDialog<void>(
                   context: context,
                   barrierDismissible: true,
-                  child: NewTodoDialog());
+                  builder: (context) => NewTodoDialog());
             }
           },
           child: const Icon(Icons.add),
@@ -108,7 +109,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 }
 
 class LifecycleEventHandler extends WidgetsBindingObserver {
-  LifecycleEventHandler({this.resumeCallBack, this.detachedCallBack});
+  LifecycleEventHandler(
+      {required this.resumeCallBack, required this.detachedCallBack});
 
   final Function resumeCallBack;
   final Function detachedCallBack;

@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 import 'package:todo_supabase/core/todo.dart';
 
 void main() {
-  Todo todo, todoFromMap;
+  late Todo todo, todoFromMap;
 
   group('Todo', () {
     setUp(() {
@@ -36,19 +36,17 @@ void main() {
   });
 
   group('Validation:', () {
+    setUp(() {
+      todo = Todo('task', false);
+    });
+
     test('Doesn\'t accept null task or status', () {
       expect(() {
-        Todo(null, true);
-      }, throwsA((isA<AssertionError>())));
-      expect(() {
-        Todo('task', null);
-      }, throwsA((isA<AssertionError>())));
-      expect(() {
         Todo.fromMap({'task': null, 'status': true});
-      }, throwsA((isA<AssertionError>())));
+      }, throwsA((isA<TypeError>())));
       expect(() {
         Todo.fromMap({'task': 'task', 'status': null});
-      }, throwsA((isA<AssertionError>())));
+      }, throwsA((isA<TypeError>())));
     });
 
     test('Doesn\'t accept empty task', () {

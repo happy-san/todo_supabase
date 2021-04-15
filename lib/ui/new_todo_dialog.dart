@@ -9,10 +9,10 @@ class NewTodoDialog extends StatefulWidget {
 }
 
 class _NewTodoDialogState extends State<NewTodoDialog> {
-  final _repo = sl<TodoRepository>();
+  final TodoRepository _repo = sl<TodoRepository>();
   final _formKey = GlobalKey<FormState>();
-  FocusNode focusNode1, focusNode2, focusNode3;
-  TextEditingController textEditingController1,
+  late FocusNode focusNode1, focusNode2, focusNode3;
+  late TextEditingController textEditingController1,
       textEditingController2,
       textEditingController3;
 
@@ -118,7 +118,7 @@ class _NewTodoDialogState extends State<NewTodoDialog> {
   }
 
   void _createNewTodos() async {
-    if (_formKey.currentState.validate()) {
+    if (_formKey.currentState!.validate()) {
       await _createTodo(textEditingController1.value.text);
       await _createTodo(textEditingController2.value.text);
       await _createTodo(textEditingController3.value.text);
@@ -134,6 +134,6 @@ class _NewTodoDialogState extends State<NewTodoDialog> {
     }
   }
 
-  String _validateTask(String task) =>
-      task.length < 100 ? null : 'Way too long!';
+  String? _validateTask(String? task) =>
+      (task == null || task.length < 100) ? null : 'Way too long!';
 }

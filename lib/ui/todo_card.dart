@@ -6,7 +6,7 @@ class TodoCard extends StatelessWidget {
   final bool isLast;
 
   const TodoCard(
-      {Key key, this.task = '', this.status = false, this.isLast = false})
+      {Key? key, required this.task, required this.status, this.isLast = false})
       : super(key: key);
 
   @override

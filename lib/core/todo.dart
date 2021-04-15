@@ -3,8 +3,7 @@ class Todo {
   bool status;
 
   Todo(String t, bool s)
-      : assert(t != null && t.isNotEmpty),
-        assert(s != null),
+      : assert(t.isNotEmpty),
         task = t,
         status = s;
 
